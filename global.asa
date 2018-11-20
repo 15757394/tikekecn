@@ -1,0 +1,47 @@
+<script language="vbscript" runat="server">
+Sub Application_OnStart()
+	Application("tmpftpUser") = ""
+	Application("tmpDomain") = ""
+	Application("tmpMailDomain") = ""
+	Application("tmpsiteDomain") = ""
+	Application("online") = ""
+	Application("PAY_SEED") = 1
+End Sub
+sub session_OnStart
+	Session.Timeout = 120 
+	servername = Request.ServerVariables("SERVER_NAME")
+End sub
+
+sub session_Onend
+	Application.lock
+	oldonline=	Application("online")
+	Application("online")=deletesubstring(oldonline,session("user_name"))
+	Application.unlock
+End sub
+
+Function deletesubstring( stringsall,substrings)
+	actions = 0
+	if stringsall="" then   deletesubstring ="" : exit function
+	If substrings="" Then  deletesubstring =stringsall : exit function
+	spot = instr(1,"," & stringsall& ",","," & substrings & ",")
+	If spot=0 Then deletesubstring =stringsall : exit function
+	lengthstr = len(stringsall)
+	lengthsub = len(substrings)
+	If stringsall=substrings And actions = 0  Then actions = 1
+	If instr(1,stringsall,substrings)=1 And actions = 0 Then actions = 2
+	If lengthsub + spot -1  = lengthstr And actions = 0 Then actions = 3
+	stringsall = lcase( stringsall)
+	substrings = lcase(substrings)
+	Select Case actions
+	  Case 1 '相等
+		deletesubstring = ""
+	  Case 2 '在第一位
+		deletesubstring = right( stringsall , lengthstr - lengthsub-1)
+	  Case 3 '在最后
+		deletesubstring = left( stringsall , lengthstr - lengthsub-1)
+	  Case 0 '在中间
+		deletesubstring = left(stringsall,spot-1) & right(stringsall,lengthstr- spot - lengthsub)
+	End Select
+End Function
+
+</script>
